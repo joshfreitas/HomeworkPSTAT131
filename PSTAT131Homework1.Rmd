@@ -1,0 +1,39 @@
+---
+title: "PSTAT 131 - Homework 1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(tidymodels)
+```
+
+# Question 1: Creating a histogram of hwy
+```{r} 
+mpg
+mpg$hwy
+ggplot(mpg, aes(x=hwy)) + geom_histogram(binwidth=3)
+```
+\newpage
+
+# Question 2: Creating a scatterplot of hwy and cty
+```{r}
+ggplot(data = mpg, aes(x = hwy, y = cty)) + geom_point()
+```
+\newpage
+
+# Question 3: Constructing a barplot of manufacturer
+```{r}
+ggplot(data = mpg, aes(x = reorder(factor(manufacturer), manufacturer, function(x) length(x)))) + geom_bar() + coord_flip()
+```
+\newpage
+
+# Question 4: Creating a boxplot of hwy grouped by cyl
+```{r}
+ggplot(data)
+```
