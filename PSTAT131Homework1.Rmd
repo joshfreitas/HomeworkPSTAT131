@@ -13,27 +13,91 @@ library(ggplot2)
 library(tidymodels)
 ```
 
-# Question 1: Creating a histogram of hwy
-```{r} 
-mpg
-mpg$hwy
-ggplot(mpg, aes(x=hwy)) + geom_histogram(binwidth=3)
-```
+# Questions
+## 1. 
+Supervised learning is a type of statistical machine learning in which a portion of the data set is used to fit the models (usually based on a number of different predictors) and then the accuracy of the model is determined, and testing data is used to see how well this model can predict other sample data. Unsupervised learning is using statistical machine learning in which there is no predictor variable, so many types of models cannot be done to test how accurate it may be. Overall, both types of learning are meant to provide insight to how a specific model can provide information about a population of which the sample is taken from, but supervised learning focuses on seeing how well the model fits other data and unsupervised learning does not work to try and determine its accuracy.
+
+## 2. 
+A regression model is a supervised learning model in which the outcome variable is numeric and can thus be fit onto a sort of number line. A classification model is a supervised learning model in which the outcome variable is qualitative and thus fits into a certain category. A classification model can be more concrete when testing a model because it either falls into the correct category or not, where a regression model can show how accurate the model was for testing sets. 
+
+## 3. 
+Two commonly used metrics for regression ML problems would be MSE and R-squared. These metrics are used to measure how well the data fits the model that has been created from the data, i.e. how well one variable can predict the response. Two commonly used metrics for classification ML problems would be the Bayes error rate and K nearest neighbors. The Bayes error rate is based on conditional probability of one variable that can thus predict the category of which the response will fall under based on the previous observations from the sample. K nearest neighbors refers to the more realistic approach of estimating the response through identifying K points in the training data that are closest to x0 and then estimating the conditional probability for class j as the preaction of points in N0 whose response values equal j.
+
+## 4. 
+a. Descriptive models are models generally used to show a trend in data to visualize these patterns. This tends to include data cleaning and then presenting the cleaned information with some functions to visualize the data for clearer understanding of their patterns and significance.
+b. Inferential models are models that generally work to help test theories and provide insight to a relationship between variables. They work to find which features of the data are significant and thus provide information about the strength of patterns which we might see.
+c. Predictive models are models that want to predict Y with minimum reducible error, meaning finding models that are as accurate as possible and cannot hopefully be accurate beyond random error.
+
+## 5. 
+a. Mechanistic refers to a model type which assumes a parametric form of the model f, meaning that there are set standards of which this function will follow to predict or assess the data set. Empirically-driven models are models which have no strict assumptions about f and are much more flexible than parametric models, but therefore also require a greater number of observations. These models are similar in that they both aim to assess the given data in some way and fit the data into some created function. They differ, however, in their goals for what the data will tell us about inferences we have and how much flexibility we can have in terms of our model.
+b. In general, a parametric model is easier to understand because it creates a much more simple way of thinking about the data: it follows a pattern based on a  few numbers and equations. Empirically-driven models work more to our own brains and are more realistic in their assumptions about the data, but it then makes it much more difficult to understand in terms of mathematics.
+c. The bias-variance tradeoff is the idea that you want to balance MSE, bias, and variance of a model when finding a way to fit the data. If you have high variance, that means that you will likely have low bias, and vice versa. A good model will aim to balance these two or be explicit in the tendency of the model to have more variability or bias. In mechanistic models, it is fairly easy to calculate these with different tests and see if tweaks to the model can bring the balance closer together. In empirically-driven statistics with less strict rules for f, then you will not be able to calculate bias and variance as well but it is still important to understand that bias and variance exist and balance between them is still important to avoid overfitting the model.
+
+## 6. 
+To see how likely a constituent would be to vote in favor of a candidate, we would consider that to be predictive, as we aren’t testing a theory of the model but instead predicting the behavior of a new observation based on the data which we currently have. To see how a personal relationship would impact the likelihood of a voter voting a certain way would be inferential, as we are testing the significance of a feature of the observation, i.e. is their relationship with the politician significant in their voting behavior.
 \newpage
 
-# Question 2: Creating a scatterplot of hwy and cty
+
+# Excercises
+## Exercise 1: Creating a histogram of hwy
+```{r} 
+?mpg
+ggplot(mpg, aes(x=hwy)) + geom_histogram(binwidth=3)
+```
+
+Based on the created histogram, we can see that there is a right-skew to the data
+and it is bimodal. Because we are only counting the counts of different highway
+miles per gallon. We can assume that the two counts with high miles per gallon 
+would likely be for newer, smaller, more fuel-efficient cars and the bimodal peaks
+would be a distinction between compact cars and SUVs, with compact cars being
+more fuel-efficient.
+
+## Exercise 2: Creating a scatterplot of hwy and cty
 ```{r}
 ggplot(data = mpg, aes(x = hwy, y = cty)) + geom_point()
 ```
-\newpage
 
-# Question 3: Constructing a barplot of manufacturer
+The relationship between hwy and cty shows a fairly strong positive linear relationship.
+This isn't very shocking as they both are measures of miles per gallon, just changing
+on where they are measured and thus the fuel efficiency. In general the highway
+mpg is higher than the corresponding city mpg, but this makes sense as city driving
+takes more acceleration between stops and generally has a slower speed limit.
+
+## Exercise 3: Constructing a barplot of manufacturer
 ```{r}
 ggplot(data = mpg, aes(x = reorder(factor(manufacturer), manufacturer, function(x) length(x)))) + geom_bar() + coord_flip()
 ```
-\newpage
 
-# Question 4: Creating a boxplot of hwy grouped by cyl
+From the sorted bar plot, we notice that the manufacturer who produced the most
+cars in the data set is Dodge, and the manufacturer with the least cars is Lincoln.
+
+## Exercise 4: Creating a boxplot of hwy grouped by cyl
 ```{r}
-ggplot(data)
+ggplot(data = mpg, aes(y = hwy, x = cyl, group = cyl)) + geom_boxplot()
 ```
+
+From these grouped boxplots, I can see that a majority of the cylinders are divisible by 2
+and that the lower the number of cylinders, the higher the highway miles per gallon.
+This makes sense in the fact that bigger cars would require more cylinders and that
+they would also have worse mpg because of their size. Also, there are a few outliers
+in the data, with most showing higher fuel efficiency than the others in their
+respective cylinder groups.
+
+## Exercise 5: Using the corrplot package
+``` {r}
+library(corrplot)
+mpgNumeric <- data.frame(mpg$displ, mpg$year, mpg$cyl, mpg$cty, mpg$hwy)
+mpgNumeric
+mpg_cor <- cor(mpgNumeric)
+corrplot(mpg_cor, type = 'lower', method = 'number')
+```
+
+The positive correlations which the table shows are between highway and city mpg, 
+cylinder and year, and displacement and year. The negative correlations exist between
+city mpg and displacement, highway mpg and displacement, city mpg and year, city mpg
+and cylinders, and highway mpg and cylinders. The strongest relationships here are
+between displacement and all other variables besides year, and the city/highway
+mpgs and all other variables besides year. I expected there to be a stronger
+relationship between year and other variables, but upon rereading the information 
+about the data set i realized the data only spanned 9 years and technology for
+cars only could have improved so much between 1999 and 2008.
