@@ -1,0 +1,118 @@
+---
+title: "PSTAT 131 Homework 2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(ggthemes)
+library(yardstick)
+
+abaloneCSV <- read.csv("/Users/joshfreitas/Desktop/pstat 131/abalone.csv")
+head(abaloneCSV)
+```
+
+## Question 1: Adding `age` to the dataset
+```{r}
+abaloneData <- mutate(abaloneCSV, age = rings + 1.5)
+glimpse(abaloneData)
+abaloneData %>% 
+  ggplot(aes(x = age)) +
+  geom_histogram(bins = 60) +
+  theme_clean()
+abaloneData %>% 
+  ggplot(aes(x = age)) + geom_boxplot()
+```
+
+From the histogram and boxplot, we can see that the data follows a fairly normal distribution, which is 
+right-skewed. The boxplot indicates that the median age is around 11, and also shows many outliers
+in the data set.
+
+## Question 2: Splitting the data
+```{r}
+set.seed(3162001)
+
+abalone_split <- initial_split(abaloneData, prop = 0.8, strata = age)
+abalone_testing <- testing(abalone_split)
+abalone_training <- training(abalone_split)
+
+head(abalone_testing); head(abalone_training)
+```
+
+## Question 3: Creating a recipe to predict `age` from other predictor variables
+```{r}
+simple_abalone_recipe <- recipe(age ~ type + longest_shell + diameter + height + whole_weight
+                                + shucked_weight + viscera_weight + shell_weight, data = abalone_training)
+simple_abalone_recipe
+
+abalone_recipe <- recipe(age ~ type + longest_shell + diameter + height + whole_weight
+                                + shucked_weight + viscera_weight + shell_weight, data = abalone_training) %>% 
+  step_dummy(all_nominal_predictors()) %>% 
+  step_interact(terms = ~ starts_with('type'):shucked_weight + longest_shell:diameter + shucked_weight:shell_weight) %>% 
+  step_normalize(all_predictors())
+abalone_recipe
+```
+
+We don't use `rings` to predict `age` because we have already defined `age` to be an exact function of `rings`.
+If we did use `rings` in our model, we would have a predictor that will perfectly predict `age`, and thus would
+create a model that is not accurate or useful.
+
+## Question 4: Creating a `lm` linear model
+```{r}
+lm_model <- linear_reg() %>% 
+  set_engine('lm')
+```
+
+## Question 5: Setting up a workflow
+```{r}
+lm_wflow <- workflow() %>% 
+  add_model(lm_model) %>% 
+  add_recipe(abalone_recipe)
+```
+
+## Question 6: Using `fit()` to find the predicted age
+```{r}
+lm_fit <- fit(lm_wflow, abalone_training)
+lm_fit %>% 
+  extract_fit_parsnip() %>% 
+  tidy()
+
+fakeAbalone <- data.frame(type = 'F', longest_shell = 0.50, diameter = 0.10, height = 0.30, whole_weight = 4, shucked_weight = 1, viscera_weight = 2, shell_weight = 1, rings = 9)
+
+predict(lm_fit, new_data = fakeAbalone)
+```
+
+From our predict() function, we could see that the predicted age of thus hypothetical abalone
+would be **21.73369**.
+
+## Question 7: Assessing model performance with `yardstick`
+```{r}
+abalone_training_res <- predict(lm_fit, new_data = abalone_training %>% select(-age))
+head(abalone_training_res)
+
+abalone_training_res <- bind_cols(abalone_training_res, abalone_training %>% select(age))
+head(abalone_training_res)
+
+abalone_training_res %>% 
+  ggplot(aes(x = .pred, y = age)) +
+  geom_point(alpha = 0.2) +
+  geom_abline(lty = 2) + 
+  theme_bw() +
+  coord_obs_pred()
+
+abalone_metrics <- metric_set(rmse, rsq, mae)
+abalone_metrics(abalone_training_res, truth = age, 
+                estimate = .pred)
+```
+
+Our metrics have produced a `rmse`=**2.1556964**, `rsq`=**0.5477235**, and `mae`=**1.5447322**.
+Generally, the RMSE and MAE are high, indicating that the residuals of the model are high
+and thus that they are spread out and at a high magnitude. 
+The `rsq` value of 0.5477235 indicate that only 54.77% of the variability in age of the abalone
+can be predicted by our model, which is a weak relationship. Thus, based on the predictors we were provided
+and our interactions, we would say that these are not effective at predicting the age of an abalone.
