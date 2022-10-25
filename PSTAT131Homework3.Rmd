@@ -1,0 +1,42 @@
+---
+title: "PSTAT 131 Homework 3"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# loading in R packages
+library(tidymodels)
+library(tidyverse)
+library(corrr)
+library(discrim)
+```
+
+## Loading in `titanic.csv` and converting predictors
+```{r}
+titanicCSV <- read.csv("/Users/joshfreitas/Desktop/pstat 131/titanic.csv")
+titanic_data <- mutate(titanicCSV, survived = factor(survived), pclass = factor(pclass))
+titanic_data
+```
+
+# Question 1: Splitting the data
+```{r}
+set.seed(3162001)
+
+titanic_split <- initial_split(titanic_data, prop = 0.8, strata = survived)
+titanic_testing <- testing(titanic_split)
+titanic_training <- training(titanic_split)
+
+titanic_testing; titanic_training
+```
+# Question 2: Describe the distribution of `survived` in the training dataset
+```{r}
+
+```
+
+
+
+
